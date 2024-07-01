@@ -46,8 +46,11 @@ export const registerUser = async (req, res, next) => {
             {
               return next(errorHandler(400,'Invalid Credentials'))
             }
-            const token=jwt.sign({id:userdetails._id},process.env.JWT_SECRET_KEY);
-            res.status(200).cookie('access_token',token,{httpOnly:true,}).json({ message: "User Logined Successfully"})
+            const token=jwt.sign({id:userdetails._id},process.env.JWT_SECRET_KEY,{expiresIn:"1h"});
+            userdetails.token = token;
+            await userdetails.save();
+            const { password: passkey, ...rest } = userdetails._doc;
+            res.status(200).cookie('access_token',token,{httpOnly:true,}).json({ message: "User Logined Successfully",token:token,pass:rest})
         }
 
         catch(error)
